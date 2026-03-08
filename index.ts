@@ -1486,6 +1486,7 @@ const memoryLanceDBProPlugin = {
 
     const scopeManager = createScopeManager(config.scopes);
     const migrator = createMigrator(store);
+    const agentWorkspaceMap = resolveAgentWorkspaceMap(api);
 
     const reflectionErrorStateBySession = new Map<string, ReflectionErrorState>();
     const reflectionByAgentCache = new Map<string, { updatedAt: number; invariants: string[]; derived: string[] }>();
@@ -2190,6 +2191,7 @@ const memoryLanceDBProPlugin = {
           const currentSessionId = typeof sessionEntry.sessionId === "string" ? sessionEntry.sessionId : "unknown";
           let currentSessionFile = typeof sessionEntry.sessionFile === "string" ? sessionEntry.sessionFile : undefined;
           const sourceAgentId = parseAgentIdFromSessionKey(sessionKey) || "main";
+          const effectiveWorkspaceDir = agentWorkspaceMap[sourceAgentId] || workspaceDir;
           const commandSource = typeof context.commandSource === "string" ? context.commandSource : "";
           const triggerKey = `${String(event?.action || "unknown")}|${sessionKey || "(none)"}|${currentSessionFile || currentSessionId || "unknown"}`;
           if (isDuplicateReflectionTrigger(triggerKey)) {
@@ -2267,7 +2269,7 @@ const memoryLanceDBProPlugin = {
             maxInputChars: reflectionMaxInputChars,
             cfg,
             agentId: reflectionRunAgentId,
-            workspaceDir,
+            workspaceDir: effectiveWorkspaceDir,
             timeoutMs: reflectionTimeoutMs,
             thinkLevel: reflectionThinkLevel,
             toolErrorSignals,
@@ -2335,7 +2337,7 @@ const memoryLanceDBProPlugin = {
           ].join("\n");
           const reflectionBody = `${header}${reflectionText.trim()}\n`;
 
-          const outDir = join(workspaceDir, "memory", "reflections", dateStr);
+          const outDir = join(effectiveWorkspaceDir, "memory", "reflections", dateStr);
           await mkdir(outDir, { recursive: true });
           const agentToken = sanitizeFileToken(sourceAgentId, "agent");
           const sessionToken = sanitizeFileToken(currentSessionId || "unknown", "session");
@@ -2345,7 +2347,7 @@ const memoryLanceDBProPlugin = {
             const suffix = attempt === 0 ? "" : `-${Math.random().toString(36).slice(2, 8)}`;
             const fileName = `${timeCompact}-${agentToken}-${sessionToken}${suffix}.md`;
             const candidateRelPath = join("memory", "reflections", dateStr, fileName);
-            const candidateOutPath = join(workspaceDir, candidateRelPath);
+            const candidateOutPath = join(effectiveWorkspaceDir, candidateRelPath);
             try {
               await writeFile(candidateOutPath, reflectionBody, { encoding: "utf-8", flag: "wx" });
               relPath = candidateRelPath;
@@ -2364,7 +2366,7 @@ const memoryLanceDBProPlugin = {
           if (config.selfImprovement?.enabled !== false && reflectionGovernanceCandidates.length > 0) {
             for (const candidate of reflectionGovernanceCandidates) {
               await appendSelfImprovementEntry({
-                baseDir: workspaceDir,
+                baseDir: effectiveWorkspaceDir,
                 type: "learning",
                 summary: candidate.summary,
                 details: candidate.details,
@@ -2453,7 +2455,7 @@ const memoryLanceDBProPlugin = {
             }
           }
 
-          const dailyPath = join(workspaceDir, "memory", `${dateStr}.md`);
+          const dailyPath = join(effectiveWorkspaceDir, "memory", `${dateStr}.md`);
           await ensureDailyLogFile(dailyPath, dateStr);
           await appendFile(dailyPath, `- [${timeHms} UTC] Reflection generated: \`${relPath}\`\n`, "utf-8");
 
