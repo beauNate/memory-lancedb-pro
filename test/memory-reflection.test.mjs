@@ -795,13 +795,13 @@ describe("memory reflection", () => {
       assert.equal(parsed.sessionStrategy, "systemSessionMemory");
     });
 
-    it("defaults writeLegacyCombined=true for memoryReflection config", () => {
+    it("defaults writeLegacyCombined=false for memoryReflection config", () => {
       const parsed = parsePluginConfig({
         ...baseConfig(),
         sessionStrategy: "memoryReflection",
         memoryReflection: {},
       });
-      assert.equal(parsed.memoryReflection.writeLegacyCombined, true);
+      assert.equal(parsed.memoryReflection.writeLegacyCombined, false);
     });
 
     it("allows disabling legacy combined reflection writes", () => {

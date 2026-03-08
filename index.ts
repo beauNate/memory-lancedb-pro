@@ -1815,7 +1815,7 @@ const memoryLanceDBProPlugin = {
       const reflectionDedupeErrorSignals = config.memoryReflection?.dedupeErrorSignals !== false;
       const reflectionInjectMode = config.memoryReflection?.injectMode ?? "inheritance+derived";
       const reflectionStoreToLanceDB = config.memoryReflection?.storeToLanceDB !== false;
-      const reflectionWriteLegacyCombined = config.memoryReflection?.writeLegacyCombined !== false;
+      const reflectionWriteLegacyCombined = config.memoryReflection?.writeLegacyCombined === true;
       const warnedInvalidReflectionAgentIds = new Set<string>();
 
       const resolveReflectionRunAgentId = (cfg: unknown, sourceAgentId: string): string => {
@@ -2509,7 +2509,7 @@ export function parsePluginConfig(value: unknown): PluginConfig {
       ? {
         enabled: sessionStrategy === "memoryReflection",
         storeToLanceDB: reflectionStoreToLanceDB,
-        writeLegacyCombined: memoryReflectionRaw.writeLegacyCombined !== false,
+        writeLegacyCombined: memoryReflectionRaw.writeLegacyCombined === true,
         injectMode: reflectionInjectMode,
         agentId: asNonEmptyString(memoryReflectionRaw.agentId),
         messageCount: reflectionMessageCount,
@@ -2526,7 +2526,7 @@ export function parsePluginConfig(value: unknown): PluginConfig {
       : {
         enabled: sessionStrategy === "memoryReflection",
         storeToLanceDB: reflectionStoreToLanceDB,
-        writeLegacyCombined: true,
+        writeLegacyCombined: false,
         injectMode: "inheritance+derived",
         agentId: undefined,
         messageCount: reflectionMessageCount,

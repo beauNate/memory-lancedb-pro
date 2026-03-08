@@ -201,7 +201,7 @@ Filters out low-quality content at both auto-capture and tool-store stages:
   - Writes one event row (`type=memory-reflection-event`) plus item rows (`type=memory-reflection-item`) for each `Invariants` / `Derived` bullet.
   - Event rows keep lightweight provenance/audit metadata only (`eventId`, `sessionKey`, `usedFallback`, `errorSignals`, source path).
   - Item rows carry per-item decay metadata (`decayModel`, `decayMidpointDays`, `decayK`, `baseWeight`, `quality`) plus ordinal/group metadata.
-  - Compatibility mode: `memoryReflection.writeLegacyCombined=true` (default) also writes legacy combined rows (`type=memory-reflection`) during migration.
+  - Compatibility mode: set `memoryReflection.writeLegacyCombined=true` to also write legacy combined rows (`type=memory-reflection`) during migration. Default is `false`.
   - Reflection rows display as `reflection:<scope>`.
 - Reflection-derived durable memory mapping:
   - Available memory categories in the plugin are `preference`, `fact`, `decision`, `entity`, `reflection`, `other`.
@@ -510,7 +510,7 @@ openclaw config get plugins.slots.memory
   },
   "memoryReflection": {
     "storeToLanceDB": true,
-    "writeLegacyCombined": true,
+    "writeLegacyCombined": false,
     "injectMode": "inheritance+derived",
     "agentId": "memory-distiller",
     "messageCount": 120,
